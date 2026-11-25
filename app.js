@@ -153,6 +153,7 @@ function puzzlePreview(path, number) {
 }
 
 const status = document.querySelector('#team-status');
+const headerTeam = document.querySelector('#header-team');
 const headerLogin = document.querySelector('a.header-login');
 const headerLogout = document.querySelector('#header-logout');
 const authPanel = document.querySelector('#team-auth');
@@ -218,6 +219,7 @@ async function showSession(session) {
     saveTeam.textContent = activeTeam ? 'Gem ændringer' : 'Opret hold ↗';
   }
   authPanel.hidden = Boolean(session);
+  headerTeam.textContent = session ? 'Mit hold' : 'Opret dit hold';
   headerLogin.hidden = Boolean(session);
   headerLogout.hidden = !session;
   createForm.hidden = !session || Boolean(result.error);
