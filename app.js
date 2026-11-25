@@ -44,7 +44,8 @@ async function openImage(event, path) {
 }
 
 const status = document.querySelector('#team-status');
-const headerLogin = document.querySelector('.header-login');
+const headerLogin = document.querySelector('a.header-login');
+const headerLogout = document.querySelector('#header-logout');
 const authPanel = document.querySelector('#team-auth');
 const signin = document.querySelector('#signin');
 const createForm = document.querySelector('#create-team');
@@ -107,8 +108,8 @@ async function showSession(session) {
     saveTeam.textContent = activeTeam ? 'Gem ændringer' : 'Opret hold ↗';
   }
   authPanel.hidden = Boolean(session);
-  headerLogin.href = session ? '#hold' : '#signin';
-  headerLogin.textContent = session ? 'Mit hold' : 'Log ind';
+  headerLogin.hidden = Boolean(session);
+  headerLogout.hidden = !session;
   createForm.hidden = !session || Boolean(result.error);
   logout.hidden = !session;
   status.textContent = result.error ? 'Holdet kunne ikke hentes. Prøv at genindlæse siden.'
@@ -203,10 +204,16 @@ handleForm(createForm, async (form, feedback) => {
   loadBoard();
 });
 
-logout.addEventListener('click', async () => {
-  const {error} = await client.auth.signOut();
-  if (error) status.textContent = 'Du kunne ikke logges ud. Prøv igen.';
-});
+async function signOut() {
+  const {error} = await client.auth.signOut({scope: 'local'});
+  if (error) {
+    status.textContent = 'Du kunne ikke logges ud. Prøv igen.';
+    status.scrollIntoView({block: 'center'});
+  }
+}
+
+logout.addEventListener('click', signOut);
+headerLogout.addEventListener('click', signOut);
 
 function answerForm(number) {
   const form = document.createElement('form');

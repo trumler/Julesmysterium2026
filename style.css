@@ -17,7 +17,8 @@
 .add-member { border: 1px solid #577368; border-radius: 50%; width: 2.25rem; height: 2.25rem; background: transparent; color: inherit; font: inherit; font-size: 1.35rem; cursor: pointer; }
 
 .header-actions { display: flex; flex-wrap: wrap; gap: .4rem; }
-.header-button { display: inline-flex; align-items: center; white-space: nowrap; }
+.header-button { display: inline-flex; align-items: center; white-space: nowrap; cursor: pointer; }
+.header-button[hidden] { display: none; }
 .header-login { background: transparent; color: var(--green); border: 1px solid var(--green); }
 .button-green:disabled { opacity: .65; cursor: default; }
 form[aria-busy="true"] button:disabled { cursor: progress; }
