@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#153d32">
+  <meta name="description" content="Holmeagerskolens Julemysterie 2026 – saml dit hold og løs otte julegåder.">
+  <title>Holmeagerskolens Julemysterie 2026</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <div class="announcement">✦ &nbsp; ET JULEMYSTERIE FOR HELE HOLMEAGERSKOLEN &nbsp; ✦</div>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Holmeagerskolens Julemysterie, forsiden"><span class="brand-mark">✳</span><span>HOLMEAGERSKOLENS<small>JULEMYSTERIE <b>2026</b></small></span></a>
+    <nav aria-label="Hovedmenu"><a href="#saadan">Sådan spiller I</a><a href="#gaader">Gåderne</a><a href="#pointtavle">Pointtavle</a></nav>
+    <a class="header-button" href="#hold">Opret dit hold <span>↗</span></a>
+  </header>
+  <main id="top">
+    <section class="hero">
+      <div class="hero-pattern" aria-hidden="true"></div><div class="stars" aria-hidden="true">✦ <span>✧</span> · ✳</div>
+      <div class="hero-content"><p class="eyebrow light">ET MYSTERIE. OTTE GÅDER. ÉN JUL.</p><h1>Julen gemmer<br>på <em>hemmeligheder.</em></h1><p class="hero-copy">Saml dit hold, skærp sanserne og vær med, når Holmeagerskolens julemysterie folder sig ud – én gåde ad gangen.</p><div class="hero-actions"><a class="button button-cream" href="#saadan">Gå på opdagelse <span>↗</span></a><a class="text-link" href="#gaader">Se årets gåder <span>↓</span></a></div><div class="hero-bottom"><span>✳</span> FOR ELEVER, LÆRERE & FORÆLDRE <i></i> DECEMBER 2026</div></div>
+      <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="art-star star-one">✧</div><div class="art-star star-two">✦</div><div class="art-star star-three">✳</div><div class="seal"><div class="seal-inner"><span>HOLMEAGERSKOLEN</span><strong>?</strong><small>JULEMYSTERIET<br>2026</small></div></div><div class="art-caption">ET LILLE MYSTERIE<br>MED STOR JULEMAGI <span>✦</span></div></div>
+      <div class="hero-index" aria-hidden="true">01 / 03 <span>────────</span> SCROLL FOR AT UDFORSKE ↓</div>
+    </section>
+    <section class="intro section" id="saadan"><div class="section-heading"><div><p class="eyebrow">VELKOMMEN TIL JULEMYSTERIET <span>✳</span></p><h2>En december fuld<br>af <em>gode gåder.</em></h2></div><p>Julen er fuld af traditioner. I år tilføjer vi én mere: et mysterium, der skal løses i fællesskab.</p></div><div class="steps"><article><span class="step-number">01 <i>✳</i></span><h3>Saml et hold</h3><p>Find sammen med familie, venner eller klassekammerater. Vælg et holdnavn, og gør jer klar.</p></article><article><span class="step-number">02 <i>✧</i></span><h3>Knæk gåderne</h3><p>En ny julegåde åbner hver mandag og torsdag. Hvert svar er ét enkelt ord.</p></article><article><span class="step-number">03 <i>✦</i></span><h3>Saml point</h3><p>Et rigtigt svar giver point til holdet. Følg med på pointtavlen gennem december.</p></article></div></section>
+    <section class="puzzles section" id="gaader"><div class="section-heading"><div><p class="eyebrow">KALENDEREN <span>✳</span></p><h2>Otte gåder.<br><em>Uendelig julehygge.</em></h2></div><p>Gåderne åbner kl. 08.00 mandage og torsdage. Husk at svare, inden den næste gåde åbner. Når en gåde er lukket, kan I se løsningen som et billede.</p></div><p class="demo-note">Gåder og løsninger vises her, når de åbner.</p><div class="puzzle-grid" id="puzzle-grid"></div><div class="puzzle-foot"><span>✳</span> DEN FØRSTE GÅDE ÅBNER 30. NOVEMBER <span>✳</span></div></section>
+    <section class="leaderboard section" id="pointtavle"><div class="leader-copy"><p class="eyebrow light">LIDT VENLIG KONKURRENCE <span>✳</span></p><h2>Hvem er på<br><em>sporet?</em></h2><p>Følg holdenes vej gennem mysteriet. Hvert rigtigt svar bringer jer tættere på toppen.</p><span class="leader-note">✦ &nbsp; Sammen er vi klogere</span></div><div class="board"><div class="board-heading"><div><span>JULEMYSTERIET 2026</span><h3>Pointtavlen</h3></div><span class="board-icon">✳</span></div><div class="board-label"><span>PLACERING / HOLD</span><span>POINT</span></div><div id="leaderboard-rows"></div><div class="board-footer">ET GODT MYSTERIE ER BEDST SAMMEN <span>✦</span></div></div></section>
+    <section class="join section" id="hold"><div class="join-star">✳</div><p class="eyebrow">KLAR TIL AT VÆRE MED?</p><h2>De bedste mysterier<br>løses <em>sammen.</em></h2><p>Opret en konto med brugernavn og adgangskode, og vælg et holdnavn. Første gåde åbner 30. november kl. 08.00.</p>
+      <p id="team-status" role="status">Indlæser holdtilmelding…</p>
+      <noscript>Slå JavaScript til for at oprette et hold eller logge ind.</noscript>
+      <div id="team-auth" hidden>
+        <form id="signup" class="team-form">
+          <h3>Opret konto</h3>
+          <label>Brugernavn<input name="username" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="30" pattern="[A-Za-z0-9_\-]{3,30}" required></label>
+          <small>Brug 3–30 bogstaver fra A til Z, tal, bindestreger eller underscores.</small>
+          <label>Adgangskode<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required></label>
+          <button class="button button-green">Opret konto ↗</button>
+        </form>
+        <form id="signin" class="team-form">
+          <h3>Log ind</h3>
+          <label>Brugernavn<input name="username" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="30" pattern="[A-Za-z0-9_\-]{3,30}" required></label>
+          <label>Adgangskode<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="button button-green">Log ind ↗</button>
+        </form>
+      </div>
+      <form id="create-team" class="team-form" hidden>
+        <label>Holdnavn<input name="team_name" minlength="2" maxlength="50" required></label>
+        <small>Holdnavnet vises på pointtavlen. Vælg et navn uden private oplysninger.</small>
+        <div class="roster-heading">
+          <h3>Holdmedlemmer</h3>
+          <button id="add-member" class="add-member" type="button" aria-label="Tilføj en plads på holdet">+</button>
+        </div>
+        <small>Første plads er til holdkaptajnen. I kan bruge fornavne, kælenavne eller bare skrive “Familien” eller “5.D”.</small>
+        <div id="roster-fields"></div>
+        <button id="save-team" class="button button-green">Opret hold ↗</button>
+      </form>
+      <button id="team-logout" class="button button-green" type="button" hidden>Log ud</button></section>
+  </main>
+  <footer><a class="brand footer-brand" href="#top"><span class="brand-mark">✳</span><span>HOLMEAGERSKOLENS<small>JULEMYSTERIE <b>2026</b></small></span></a><p>Et julemysterie for hele Holmeagerskolen.<br>Skabt til nysgerrige hoveder og juleglæde.</p><a href="#top">TILBAGE TIL TOPPEN ↑</a><div class="footer-bottom"><span>© 2026 HOLMEAGERSKOLENS JULEMYSTERIE</span><span>GLÆDELIG JUL ✳</span></div></footer>
+</body>
+</html>
