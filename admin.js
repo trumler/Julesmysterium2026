@@ -1,6 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { url, key } from './config.js';
 import { displayTeamName } from './team-name.js';
+import { defaultPuzzlePoints } from './puzzle-points.js';
 const client = createClient(url, key);
 const message = document.querySelector('#message'), loginSection = document.querySelector('#login-section'), dashboard = document.querySelector('#dashboard');
 const form = document.querySelector('#puzzle-form'), select = document.querySelector('#number');
@@ -16,7 +17,7 @@ function fill() {
  const dates = ['2026-11-30','2026-12-03','2026-12-07','2026-12-10','2026-12-14','2026-12-17','2026-12-21','2026-12-24'];
  form.elements.opens.value = p ? toLocal(p.opens_at) : `${dates[n-1]}T08:00`;
  form.elements.closes.value = p ? `${toLocal(p.closes_at)}:${parts(new Date(p.closes_at)).second}` : n < 8 ? `${dates[n]}T08:00` : '2026-12-31T23:59:59';
- form.elements.points.value = p?.points ?? (n === 8 ? 20 : n + 4);
+ form.elements.points.value = p?.points ?? defaultPuzzlePoints(n);
  form.elements.answers.value = (p?.answers ?? []).join('\n');
  form.elements.puzzle.value = ''; form.elements.solution.value = '';
 }

@@ -1,6 +1,7 @@
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {url,key} from './config.js';
 import { displayTeamName } from './team-name.js';
+import { defaultPuzzlePoints } from './puzzle-points.js';
 const client=createClient(url,key);
 const grid=document.querySelector('#puzzle-grid');
 const dates=['30. NOV','03. DEC','07. DEC','10. DEC','14. DEC','17. DEC','21. DEC','24. DEC'];
@@ -63,11 +64,12 @@ async function load() {
     state.textContent = !puzzle ? 'Ikke oprettet endnu' : !hasOpened ? 'Åbner snart' : isOpen ? 'Åben' : 'Lukket';
     card.append(date, state);
 
+    const points = document.createElement('span');
+    points.className = 'points';
+    points.textContent = (puzzle?.points ?? defaultPuzzlePoints(number)) + ' POINT';
+    card.append(points);
+
     if (puzzle) {
-      const points = document.createElement('span');
-      points.className = 'points';
-      points.textContent = puzzle.points + ' POINT';
-      card.append(points);
       if (hasOpened && puzzle.puzzle_path) {
         card.append(imageDownload(puzzle.puzzle_path, 'gaade-' + number + '.png', 'Download gåden'));
       }
