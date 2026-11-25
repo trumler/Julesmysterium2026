@@ -61,7 +61,7 @@ async function load() {
     const date = document.createElement('strong');
     date.textContent = puzzle ? dateFormat.format(new Date(puzzle.opens_at)) : dates[number - 1];
     const state = document.createElement('p');
-    state.textContent = !puzzle ? 'Ikke oprettet endnu' : !hasOpened ? 'Åbner snart' : isOpen ? 'Åben' : 'Lukket';
+    state.textContent = !hasOpened ? 'Åbner snart' : isOpen ? 'Åben' : 'Lukket';
     card.append(date, state);
 
     const points = document.createElement('span');
