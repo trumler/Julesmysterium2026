@@ -46,6 +46,7 @@ async function openImage(event, path) {
 const status = document.querySelector('#team-status');
 const headerLogin = document.querySelector('.header-login');
 const authPanel = document.querySelector('#team-auth');
+const signin = document.querySelector('#signin');
 const createForm = document.querySelector('#create-team');
 const logout = document.querySelector('#team-logout');
 const rosterFields = document.querySelector('#roster-fields');
@@ -112,7 +113,7 @@ async function showSession(session) {
   logout.hidden = !session;
   status.textContent = result.error ? 'Holdet kunne ikke hentes. Prøv at genindlæse siden.'
     : activeTeam ? 'Du er logget ind for holdet ' + activeTeam + '.'
-    : session ? 'Vælg et navn til jeres hold.' : '';
+    : session ? 'Du er logget ind. Vælg et navn til jeres hold.' : '';
   load();
 }
 
@@ -151,12 +152,14 @@ handleForm(document.querySelector('#signup'), async (form, feedback) => {
       : 'Kontoen kunne ikke oprettes. Prøv igen.';
     return;
   }
-  const login = await client.auth.signInWithPassword({email: accountEmail(username), password});
   form.reset();
-  if (login.error) feedback.textContent = 'Kontoen er oprettet. Brug Log ind for at fortsætte.';
+  signin.username.value = username;
+  signin.password.value = '';
+  signin.querySelector('[role=status]').textContent = 'Kontoen er oprettet. Log ind for at oprette dit hold.';
+  signin.password.focus();
 });
 
-handleForm(document.querySelector('#signin'), async (form, feedback) => {
+handleForm(signin, async (form, feedback) => {
   const username = form.username.value.trim().toLowerCase();
   if (!/^[a-z0-9_-]{3,30}$/.test(username)) {
     feedback.textContent = 'Forkert brugernavn eller adgangskode.';
