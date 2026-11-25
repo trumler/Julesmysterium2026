@@ -6,41 +6,138 @@ const dates=['30. NOV','03. DEC','07. DEC','10. DEC','14. DEC','17. DEC','21. DE
 let activeTeam = null;
 let calendarRequest = 0;
 const imageUrls = new Map();
+const puzzleDialog = document.querySelector('#puzzle-dialog');
+const enlargedImage = document.querySelector('#enlarged-puzzle');
+const enlargedTitle = document.querySelector('#enlarged-title');
+const enlargedDownload = document.querySelector('#enlarged-download');
+let nextCalendarUpdate;
 
-async function load(){
- const request = ++calendarRequest;
- const {data,error}=await client.rpc('public_puzzles');
- if(request !== calendarRequest) return;
- if(error){grid.textContent='Gåderne kunne ikke indlæses. Prøv igen senere.';return;}
- const cards = document.createDocumentFragment();
- for(let i=1;i<=8;i++){
-  const p=data.find(x=>x.number===i), card=document.createElement('article'); card.className='puzzle-card';
-  const title=document.createElement('div'); title.className='card-top'; title.textContent=`GÅDE ${String(i).padStart(2,'0')} ✧`; card.append(title);
-  const date=document.createElement('strong'); date.textContent=p ? new Intl.DateTimeFormat('da-DK',{timeZone:'Europe/Copenhagen',dateStyle:'medium',timeStyle:'short'}).format(new Date(p.opens_at)) : dates[i-1]; card.append(date);
-  const state=document.createElement('p'); state.textContent=!p?'Ikke oprettet endnu': new Date()<new Date(p.opens_at)?'Åbner snart':new Date()<new Date(p.closes_at)?'Åben':'Lukket'; card.append(state);
-  if(p){const points=document.createElement('span');points.className='points';points.textContent=`${p.points} POINT`;card.append(points);
-   for(const [path,label] of [[p.puzzle_path,'Download gåden'],[p.solution_path,'Download løsningen']]) if(path){const link=document.createElement('a'); link.href='#'; link.addEventListener('click', event => openImage(event, path));link.download=label.includes('løsningen') ? 'loesning-'+i+'.png' : 'gaade-'+i+'.png';link.textContent=label+' ↗';card.append(link); }
-   if (activeTeam && state.textContent === 'Åben') card.append(answerForm(i));
-  } cards.append(card);
- }
- grid.replaceChildren(cards);
+async function load() {
+  const request = ++calendarRequest;
+  const {data, error} = await client.rpc('public_puzzles');
+  if (request !== calendarRequest) return;
+  if (error) {
+    grid.textContent = 'Gåderne kunne ikke indlæses. Prøv igen senere.';
+    return;
+  }
+
+  clearTimeout(nextCalendarUpdate);
+  const now = Date.now();
+  const nextChange = Math.min(...data.flatMap(puzzle => [
+    Date.parse(puzzle.opens_at), Date.parse(puzzle.closes_at),
+  ]).filter(time => time > now));
+  if (Number.isFinite(nextChange)) {
+    nextCalendarUpdate = setTimeout(load, Math.min(nextChange - now + 1000, 2147483647));
+  }
+
+  const cards = document.createDocumentFragment();
+  const dateFormat = new Intl.DateTimeFormat('da-DK', {
+    timeZone: 'Europe/Copenhagen', dateStyle: 'medium', timeStyle: 'short',
+  });
+  for (let number = 1; number <= dates.length; number++) {
+    const puzzle = data.find(row => row.number === number);
+    const hasOpened = puzzle && now >= Date.parse(puzzle.opens_at);
+    const isOpen = hasOpened && now < Date.parse(puzzle.closes_at);
+    const card = document.createElement('article');
+    card.className = 'puzzle-card';
+
+    const title = document.createElement('div');
+    title.className = 'card-top';
+    title.textContent = 'GÅDE ' + String(number).padStart(2, '0') + ' ✧';
+    card.append(title);
+
+    if (!hasOpened) {
+      const gift = document.createElement('div');
+      gift.className = 'puzzle-gift';
+      gift.textContent = '🎁';
+      gift.setAttribute('aria-hidden', 'true');
+      card.append(gift);
+    } else if (puzzle.puzzle_path) {
+      card.append(puzzlePreview(puzzle.puzzle_path, number));
+    }
+
+    const date = document.createElement('strong');
+    date.textContent = puzzle ? dateFormat.format(new Date(puzzle.opens_at)) : dates[number - 1];
+    const state = document.createElement('p');
+    state.textContent = !puzzle ? 'Ikke oprettet endnu' : !hasOpened ? 'Åbner snart' : isOpen ? 'Åben' : 'Lukket';
+    card.append(date, state);
+
+    if (puzzle) {
+      const points = document.createElement('span');
+      points.className = 'points';
+      points.textContent = puzzle.points + ' POINT';
+      card.append(points);
+      if (hasOpened && puzzle.puzzle_path) {
+        card.append(imageDownload(puzzle.puzzle_path, 'gaade-' + number + '.png', 'Download gåden'));
+      }
+      if (hasOpened && !isOpen && puzzle.solution_path) {
+        card.append(imageDownload(puzzle.solution_path, 'loesning-' + number + '.png', 'Download løsningen'));
+      }
+      if (activeTeam && isOpen) card.append(answerForm(number));
+    }
+    cards.append(card);
+  }
+  grid.replaceChildren(cards);
 }
 
-async function openImage(event, path) {
-  const link = event.currentTarget;
-  if (imageUrls.has(path)) {
-    link.href = imageUrls.get(path);
-    return;
+function imageUrl(path) {
+  if (!imageUrls.has(path)) {
+    const pending = client.storage.from('puzzle-images').download(path)
+      .then(({data, error}) => {
+        if (error) throw error;
+        return URL.createObjectURL(data);
+      }).catch(error => {
+        imageUrls.delete(path);
+        throw error;
+      });
+    imageUrls.set(path, pending);
   }
-  event.preventDefault();
-  const {data, error} = await client.storage.from('puzzle-images').download(path);
-  if (error) {
-    link.textContent = 'Billedet kunne ikke hentes. Prøv igen.';
-    return;
-  }
-  if (!imageUrls.has(path)) imageUrls.set(path, URL.createObjectURL(data));
-  link.href = imageUrls.get(path);
-  link.click();
+  return imageUrls.get(path);
+}
+
+function imageDownload(path, filename, label) {
+  const link = document.createElement('a');
+  link.href = '#';
+  link.download = filename;
+  link.textContent = label + ' ↗';
+  link.addEventListener('click', async event => {
+    if (link.protocol === 'blob:') return;
+    event.preventDefault();
+    try {
+      link.href = await imageUrl(path);
+      link.textContent = label + ' ↗';
+      link.click();
+    } catch {
+      link.textContent = 'Billedet kunne ikke hentes. Prøv igen.';
+    }
+  });
+  return link;
+}
+
+function puzzlePreview(path, number) {
+  const preview = document.createElement('button');
+  preview.type = 'button';
+  preview.className = 'puzzle-preview';
+  preview.setAttribute('aria-label', 'Vis gåde ' + number + ' i større format');
+  preview.hidden = true;
+  const thumbnail = document.createElement('img');
+  thumbnail.alt = '';
+  preview.append(thumbnail);
+  imageUrl(path).then(url => {
+    thumbnail.src = url;
+    preview.hidden = false;
+  }).catch(() => {
+    // The download link remains available for retrying.
+  });
+  preview.addEventListener('click', () => {
+    enlargedTitle.textContent = 'Gåde ' + number;
+    enlargedImage.src = thumbnail.src;
+    enlargedImage.alt = 'Gåde ' + number;
+    enlargedDownload.href = thumbnail.src;
+    enlargedDownload.download = 'gaade-' + number + '.png';
+    puzzleDialog.showModal();
+  });
+  return preview;
 }
 
 const status = document.querySelector('#team-status');

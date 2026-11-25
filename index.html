@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#153d32">
   <meta name="description" content="Holmeagerskolens Julemysterie 2026 – saml dit hold og løs otte julegåder.">
   <title>Holmeagerskolens Julemysterie 2026</title>
-  <link rel="stylesheet" href="style.css?v=3">
-  <script type="module" src="app.js?v=4"></script>
+  <link rel="stylesheet" href="style.css?v=4">
+  <script type="module" src="app.js?v=5"></script>
 </head>
 <body>
   <div class="announcement">✦ &nbsp; ET JULEMYSTERIE FOR HELE HOLMEAGERSKOLEN &nbsp; ✦</div>
@@ -65,6 +65,14 @@
       </form>
       <button id="team-logout" class="button button-green" type="button" hidden>Log ud</button></section>
   </main>
+  <dialog id="puzzle-dialog" class="puzzle-dialog" aria-labelledby="enlarged-title">
+    <div class="puzzle-dialog-top">
+      <h2 id="enlarged-title"></h2>
+      <form method="dialog"><button class="button button-green" autofocus>Luk</button></form>
+    </div>
+    <img id="enlarged-puzzle" alt="">
+    <a id="enlarged-download" class="button button-green" download>Download gåden</a>
+  </dialog>
   <footer><a class="brand footer-brand" href="#top"><span class="brand-mark">✳</span><span>HOLMEAGERSKOLENS<small>JULEMYSTERIE <b>2026</b></small></span></a><p>Et julemysterie for hele Holmeagerskolen.<br>Skabt til nysgerrige hoveder og juleglæde.</p><a href="#top">TILBAGE TIL TOPPEN ↑</a><div class="footer-bottom"><span>© 2026 HOLMEAGERSKOLENS JULEMYSTERIE</span><span>GLÆDELIG JUL ✳</span></div></footer>
 </body>
 </html>
