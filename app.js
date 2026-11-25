@@ -4,7 +4,8 @@ import { displayTeamName } from './team-name.js';
 import { defaultPuzzlePoints } from './puzzle-points.js';
 const client=createClient(url,key);
 const grid=document.querySelector('#puzzle-grid');
-const dates=['30. NOV','03. DEC','07. DEC','10. DEC','14. DEC','17. DEC','21. DEC','24. DEC'];
+const dates = ['2026-11-30', '2026-12-03', '2026-12-07', '2026-12-10',
+  '2026-12-14', '2026-12-17', '2026-12-21', '2026-12-24'];
 let activeTeam = null;
 let calendarRequest = 0;
 const imageUrls = new Map();
@@ -59,7 +60,8 @@ async function load() {
     }
 
     const date = document.createElement('strong');
-    date.textContent = puzzle ? dateFormat.format(new Date(puzzle.opens_at)).toLocaleUpperCase('da-DK') : dates[number - 1];
+    const opensAt = puzzle?.opens_at ?? dates[number - 1] + 'T08:00:00+01:00';
+    date.textContent = dateFormat.format(new Date(opensAt)).toLocaleUpperCase('da-DK');
     const state = document.createElement('p');
     state.textContent = !hasOpened ? 'Åbner snart' : isOpen ? 'Åben' : 'Lukket';
     card.append(date, state);
