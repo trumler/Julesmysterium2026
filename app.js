@@ -1,5 +1,6 @@
 import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {url,key} from './config.js';
+import { displayTeamName } from './team-name.js';
 const client=createClient(url,key);
 const grid=document.querySelector('#puzzle-grid');
 const dates=['30. NOV','03. DEC','07. DEC','10. DEC','14. DEC','17. DEC','21. DEC','24. DEC'];
@@ -184,7 +185,7 @@ async function loadBoard() {
     const row = document.createElement('div');
     row.className = 'board-label';
     const name = document.createElement('span');
-    name.textContent = placement + '. ' + team.name;
+    name.textContent = placement + '. ' + displayTeamName(team.name);
     const points = document.createElement('strong');
     points.textContent = team.points;
     row.append(name, points);
@@ -210,7 +211,7 @@ async function showSession(session) {
   createForm.hidden = !session || Boolean(result.error);
   logout.hidden = !session;
   status.textContent = result.error ? 'Holdet kunne ikke hentes. Prøv at genindlæse siden.'
-    : activeTeam ? 'Du er logget ind for holdet ' + activeTeam + '.'
+    : activeTeam ? 'Du er logget ind for holdet ' + displayTeamName(activeTeam) + '.'
     : session ? 'Du er logget ind. Vælg et navn til jeres hold.' : '';
   load();
 }

@@ -1,5 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { url, key } from './config.js';
+import { displayTeamName } from './team-name.js';
 const client = createClient(url, key);
 const message = document.querySelector('#message'), loginSection = document.querySelector('#login-section'), dashboard = document.querySelector('#dashboard');
 const form = document.querySelector('#puzzle-form'), select = document.querySelector('#number');
@@ -56,16 +57,16 @@ async function showEntries({id, rpc, empty, label, action, confirm, remove, argu
 
 const showTeams = (message) => showEntries({
  id: 'teams', rpc: 'admin_teams', empty: 'Der er endnu ingen tilmeldte hold.',
- label: team => team.name + ' · ' + team.points + ' point',
+ label: team => displayTeamName(team.name) + ' · ' + team.points + ' point',
  action: 'Fjern hold',
- confirm: team => 'Vil du fjerne holdet „' + team.name + '“? Medlemslisten og holdets point slettes også.',
+ confirm: team => 'Vil du fjerne holdet „' + displayTeamName(team.name) + '“? Medlemslisten og holdets point slettes også.',
  remove: 'remove_team', argument: 'team_id',
  refresh: message => Promise.all([showTeams(message), showPlayers()]),
 }, message);
 
 const showPlayers = (message) => showEntries({
  id: 'players', rpc: 'admin_players', empty: 'Der er endnu ingen deltagerkonti.',
- label: player => player.username + (player.team_name ? ' · ' + player.team_name : ' · Intet hold'),
+ label: player => player.username + (player.team_name ? ' · ' + displayTeamName(player.team_name) : ' · Intet hold'),
  action: 'Fjern bruger',
  confirm: player => 'Vil du slette brugeren „' + player.username + '“? Et eventuelt hold, medlemslisten og point slettes også. Det kan ikke fortrydes.',
  remove: 'remove_player', argument: 'player_id',
