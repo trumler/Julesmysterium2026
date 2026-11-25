@@ -162,6 +162,7 @@ const logout = document.querySelector('#team-logout');
 const rosterFields = document.querySelector('#roster-fields');
 const addMember = document.querySelector('#add-member');
 const saveTeam = document.querySelector('#save-team');
+const teamToPuzzles = document.querySelector('#team-to-puzzles');
 const accountEmail = username => username.trim().toLowerCase() + '@julemysteriet.invalid';
 
 function appendMember(value = '') {
@@ -220,6 +221,10 @@ async function showSession(session) {
   headerLogin.hidden = Boolean(session);
   headerLogout.hidden = !session;
   createForm.hidden = !session || Boolean(result.error);
+  if (!session) {
+    teamToPuzzles.hidden = true;
+    createForm.querySelector('[role=status]').textContent = '';
+  }
   logout.hidden = !session;
   status.textContent = result.error ? 'Holdet kunne ikke hentes. Prøv at genindlæse siden.'
     : activeTeam ? 'Du er logget ind for holdet ' + displayTeamName(activeTeam) + '.'
@@ -289,6 +294,7 @@ handleForm(signin, async (form, feedback) => {
 });
 
 handleForm(createForm, async (form, feedback) => {
+  teamToPuzzles.hidden = true;
   const teamName = form.team_name.value.trim();
   if (teamName.length < 2) {
     feedback.textContent = 'Holdnavnet skal være mindst to tegn.';
@@ -309,7 +315,8 @@ handleForm(createForm, async (form, feedback) => {
   }
   const {data} = await client.auth.getSession();
   await showSession(data.session);
-  status.textContent = 'Holdet er gemt.';
+  feedback.textContent = 'Holdet er gemt.';
+  teamToPuzzles.hidden = false;
   loadBoard();
 });
 

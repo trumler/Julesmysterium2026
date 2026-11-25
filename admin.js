@@ -107,10 +107,17 @@ form.addEventListener('submit', async e => {
  const row={number:n,opens_at:opens,closes_at:closes,points:Number(form.elements.points.value),answers:answerLines(form.elements.answers.value),puzzle_path:old?.puzzle_path ?? null,solution_path:old?.solution_path ?? null};
  if (n === 2) row.bonus_answer = answerLines(form.elements.bonus_answer.value);
  try {
+  const {data: isAdmin, error: accessError} = await client.rpc('is_admin');
+  if (accessError || !isAdmin) {
+   if (!accessError || ['42501', 'PGRST301', 'PGRST303'].includes(accessError.code)) {
+    throw new Error('Log ind med din administratorbruger, før du gemmer gåden.');
+   }
+   throw new Error('Administratoradgangen kunne ikke kontrolleres. Prøv igen.');
+  }
   if (row.bonus_answer?.some(answer => answer.length > 100)) throw new Error('Hver bonusvariant må højst være 100 tegn.');
   if (!row.answers.length) throw new Error('Skriv mindst ét facitord.');
   if (row.answers.some(answer => /\s/.test(answer))) throw new Error('Hvert facit skal være ét ord.');
-  for (const [field,column] of [['puzzle','puzzle_path'],['solution','solution_path']]) { const file=form.elements[field].files[0]; if (!file) continue; if(file.type !== 'image/png' || file.size > 10485760) throw new Error('Vælg en PNG-fil på højst 10 MB.'); const path=`${n}/${field}-${crypto.randomUUID()}.png`; const {error}=await client.storage.from('puzzle-images').upload(path,file,{contentType:'image/png'}); if(error) throw error; row[column]=path; }
+  for (const [field,column] of [['puzzle','puzzle_path'],['solution','solution_path']]) { const file=form.elements[field].files[0]; if (!file) continue; if(file.type !== 'image/png' || file.size > 10485760) throw new Error('Vælg en PNG-fil på højst 10 MB.'); const path=`${n}/${field}-${crypto.randomUUID()}.png`; const {error}=await client.storage.from('puzzle-images').upload(path,file,{contentType:'image/png'}); if(error) throw new Error('Billedet kunne ikke uploades. Kontrollér, at du stadig er logget ind som administrator. Supabase: ' + error.message); row[column]=path; }
   const {error}=await client.from('puzzles').upsert(row); if(error) throw error;
   const result=await client.from('puzzles').select('*').order('number'); if(result.error) throw result.error; puzzles=result.data; fill(); say(`Gåde ${n} er gemt.`);
  } catch(err) { say('Kunne ikke gemme: '+err.message); }

@@ -41,3 +41,6 @@ form[aria-busy="true"] button:disabled { cursor: progress; }
 .puzzle-dialog-top h2 { font-size: 1.5rem; }
 .puzzle-dialog-top .button { margin: 0; }
 .puzzle-dialog img { display: block; width: 100%; max-height: 68vh; object-fit: contain; background: white; }
+
+.team-save-result { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.team-save-result .form-feedback { font-weight: 700; }
