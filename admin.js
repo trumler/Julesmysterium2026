@@ -19,35 +19,59 @@ function fill() {
  form.elements.answers.value = (p?.answers ?? []).join('\n');
  form.elements.puzzle.value = ''; form.elements.solution.value = '';
 }
-async function showTeams(message = '') {
- const list = document.querySelector('#admin-teams');
- const feedback = document.querySelector('#admin-teams-status');
- const {data, error} = await client.rpc('admin_teams');
+async function showEntries({id, rpc, empty, label, action, confirm, remove, argument, refresh}, message = '') {
+ const list = document.querySelector('#admin-' + id);
+ const feedback = document.querySelector('#admin-' + id + '-status');
+ const {data, error} = await client.rpc(rpc);
  list.replaceChildren();
- feedback.textContent = error ? 'Holdoversigten kunne ikke hentes.'
-   : message || (data.length ? '' : 'Der er endnu ingen tilmeldte hold.');
- for (const team of data ?? []) {
+ if (error) {
+  feedback.textContent = 'Oversigten kunne ikke hentes. Prøv at genindlæse siden.';
+  return;
+ }
+ feedback.textContent = message || (data.length ? '' : empty);
+ for (const entry of data) {
   const item = document.createElement('li');
-  item.textContent = team.name + ' · ' + team.points + ' point ';
-  const remove = document.createElement('button');
-  remove.type = 'button';
-  remove.textContent = 'Fjern hold';
-  remove.setAttribute('aria-label', 'Fjern holdet ' + team.name);
-  remove.addEventListener('click', async () => {
-   if (!window.confirm('Vil du fjerne holdet „' + team.name + '“? Medlemslisten og holdets point slettes også.')) return;
-   remove.disabled = true;
+  item.textContent = label(entry) + ' ';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = action;
+  button.setAttribute('aria-label', action + ': ' + label(entry));
+  button.addEventListener('click', async () => {
+   if (!window.confirm(confirm(entry))) return;
+   button.disabled = true;
    try {
-    const {data: removed, error} = await client.rpc('remove_team', {team_id: team.id});
-    if (error) feedback.textContent = 'Holdet kunne ikke fjernes. Prøv igen.';
-    else await showTeams(removed ? 'Holdet er fjernet.' : 'Holdet er allerede fjernet.');
+    const {data: removed, error: removalError} = await client.rpc(remove, {[argument]: entry.id});
+    if (removalError) throw removalError;
+    await refresh(removed ? 'Sletningen er gennemført.' : 'Posten er allerede fjernet.');
+   } catch {
+    feedback.textContent = 'Sletningen kunne ikke gennemføres. Prøv igen.';
    } finally {
-    remove.disabled = false;
+    button.disabled = false;
    }
   });
-  item.append(remove);
+  item.append(button);
   list.append(item);
  }
 }
+
+const showTeams = (message) => showEntries({
+ id: 'teams', rpc: 'admin_teams', empty: 'Der er endnu ingen tilmeldte hold.',
+ label: team => team.name + ' · ' + team.points + ' point',
+ action: 'Fjern hold',
+ confirm: team => 'Vil du fjerne holdet „' + team.name + '“? Medlemslisten og holdets point slettes også.',
+ remove: 'remove_team', argument: 'team_id',
+ refresh: message => Promise.all([showTeams(message), showPlayers()]),
+}, message);
+
+const showPlayers = (message) => showEntries({
+ id: 'players', rpc: 'admin_players', empty: 'Der er endnu ingen deltagerkonti.',
+ label: player => player.username + (player.team_name ? ' · ' + player.team_name : ' · Intet hold'),
+ action: 'Fjern bruger',
+ confirm: player => 'Vil du slette brugeren „' + player.username + '“? Et eventuelt hold, medlemslisten og point slettes også. Det kan ikke fortrydes.',
+ remove: 'remove_player', argument: 'player_id',
+ refresh: message => Promise.all([showPlayers(message), showTeams()]),
+}, message);
+
 async function show() {
  const {data:{session}} = await client.auth.getSession();
  loginSection.hidden = !!session; dashboard.hidden = true; logout.hidden = !session;
@@ -57,7 +81,7 @@ async function show() {
  if (!admin) { say('Du er logget ind som deltager. Log ud og log ind med din administratorbruger.'); return; }
  const result = await client.from('puzzles').select('*').order('number');
  if (result.error) { say('Kunne ikke hente gåderne: ' + result.error.message); return; }
- puzzles = result.data; dashboard.hidden = false; say('Du er logget ind som administrator.'); fill(); await showTeams();
+ puzzles = result.data; dashboard.hidden = false; say('Du er logget ind som administrator.'); fill(); await Promise.all([showTeams(), showPlayers()]);
 }
 document.querySelector('#login').addEventListener('submit', async e => { e.preventDefault(); const f=e.currentTarget; const {error}=await client.auth.signInWithPassword({email:f.email.value,password:f.password.value}); f.password.value=''; if(error) say('Login mislykkedes. Kontrollér e-mail og adgangskode.'); else await show(); });
 logout.addEventListener('click', async () => {
