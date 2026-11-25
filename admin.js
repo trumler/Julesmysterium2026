@@ -19,16 +19,32 @@ function fill() {
  form.elements.answers.value = (p?.answers ?? []).join('\n');
  form.elements.puzzle.value = ''; form.elements.solution.value = '';
 }
-async function showTeams() {
+async function showTeams(message = '') {
  const list = document.querySelector('#admin-teams');
  const feedback = document.querySelector('#admin-teams-status');
- const {data, error} = await client.rpc('leaderboard');
+ const {data, error} = await client.rpc('admin_teams');
  list.replaceChildren();
  feedback.textContent = error ? 'Holdoversigten kunne ikke hentes.'
-   : data.length ? '' : 'Der er endnu ingen tilmeldte hold.';
+   : message || (data.length ? '' : 'Der er endnu ingen tilmeldte hold.');
  for (const team of data ?? []) {
   const item = document.createElement('li');
-  item.textContent = team.name + ' · ' + team.points + ' point';
+  item.textContent = team.name + ' · ' + team.points + ' point ';
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.textContent = 'Fjern hold';
+  remove.setAttribute('aria-label', 'Fjern holdet ' + team.name);
+  remove.addEventListener('click', async () => {
+   if (!window.confirm('Vil du fjerne holdet „' + team.name + '“? Medlemslisten og holdets point slettes også.')) return;
+   remove.disabled = true;
+   try {
+    const {data: removed, error} = await client.rpc('remove_team', {team_id: team.id});
+    if (error) feedback.textContent = 'Holdet kunne ikke fjernes. Prøv igen.';
+    else await showTeams(removed ? 'Holdet er fjernet.' : 'Holdet er allerede fjernet.');
+   } finally {
+    remove.disabled = false;
+   }
+  });
+  item.append(remove);
   list.append(item);
  }
 }
