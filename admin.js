@@ -3,6 +3,7 @@ import { url, key } from './config.js';
 const client = createClient(url, key);
 const message = document.querySelector('#message'), loginSection = document.querySelector('#login-section'), dashboard = document.querySelector('#dashboard');
 const form = document.querySelector('#puzzle-form'), select = document.querySelector('#number');
+const logout = document.querySelector('#logout');
 let puzzles = [];
 const say = text => { message.textContent = text; };
 for (let n = 1; n <= 8; n++) select.add(new Option(`Gåde ${n}`, n));
@@ -33,16 +34,26 @@ async function showTeams() {
 }
 async function show() {
  const {data:{session}} = await client.auth.getSession();
- loginSection.hidden = !!session; dashboard.hidden = true;
+ loginSection.hidden = !!session; dashboard.hidden = true; logout.hidden = !session;
  if (!session) { say('Log ind med din administratorbruger.'); return; }
  const {data: admin, error} = await client.rpc('is_admin');
- if (error || !admin) { say('Denne bruger har ikke administratoradgang.'); return; }
+ if (error) { say('Kunne ikke kontrollere administratoradgangen. Prøv at genindlæse siden.'); return; }
+ if (!admin) { say('Du er logget ind som deltager. Log ud og log ind med din administratorbruger.'); return; }
  const result = await client.from('puzzles').select('*').order('number');
  if (result.error) { say('Kunne ikke hente gåderne: ' + result.error.message); return; }
  puzzles = result.data; dashboard.hidden = false; say('Du er logget ind som administrator.'); fill(); await showTeams();
 }
 document.querySelector('#login').addEventListener('submit', async e => { e.preventDefault(); const f=e.currentTarget; const {error}=await client.auth.signInWithPassword({email:f.email.value,password:f.password.value}); f.password.value=''; if(error) say('Login mislykkedes. Kontrollér e-mail og adgangskode.'); else await show(); });
-document.querySelector('#logout').addEventListener('click', async () => { await client.auth.signOut(); await show(); });
+logout.addEventListener('click', async () => {
+ logout.disabled = true;
+ try {
+  const {error} = await client.auth.signOut({scope: 'local'});
+  if (error) say('Du kunne ikke logges ud. Prøv igen.');
+  else await show();
+ } finally {
+  logout.disabled = false;
+ }
+});
 select.addEventListener('change',fill);
 form.addEventListener('submit', async e => {
  e.preventDefault(); const n=Number(select.value), old=puzzles.find(p=>p.number===n); let opens, closes; try { opens=fromLocal(form.elements.opens.value); closes=fromLocal(form.elements.closes.value); } catch(err) { say(err.message); return; }
