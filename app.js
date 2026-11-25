@@ -368,7 +368,7 @@ async function showPuzzleBonus(container) {
 
   const form = document.createElement('form');
   form.className = 'answer-form';
-  form.innerHTML = '<label>Fortsæt! der er et hemmeligt svar gemt dybere i gåden <span>5 ekstra point</span><input name="guess" required></label><button class="button button-green">Send bonussvar</button><p role="status"></p>';
+  form.innerHTML = '<label>Fortsæt! Der er et hemmeligt svar gemt dybere i gåden. <span>5 ekstra point</span><input name="guess" required></label><button class="button button-green">Send bonussvar</button><p role="status"></p>';
   handleForm(form, async (currentForm, feedback) => {
     const {data, error} = await client.rpc('submit_puzzle_two_bonus', {guess: currentForm.guess.value.trim()});
     const messages = {
