@@ -9,6 +9,7 @@ const logout = document.querySelector('#logout');
 const bonusField = document.querySelector('#bonus-field');
 let puzzles = [];
 const say = text => { message.textContent = text; };
+const answerLines = value => value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
 for (let n = 1; n <= 8; n++) select.add(new Option(`Gåde ${n}`, n));
 const parts = date => Object.fromEntries(new Intl.DateTimeFormat('en-GB', {timeZone:'Europe/Copenhagen',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(date).map(p => [p.type,p.value]));
 const toLocal = value => { if(!value) return ''; const p=parts(new Date(value)); return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`; };
@@ -21,7 +22,7 @@ function fill() {
  form.elements.points.value = p?.points ?? defaultPuzzlePoints(n);
  form.elements.answers.value = (p?.answers ?? []).join('\n');
  bonusField.hidden = n !== 2;
- form.elements.bonus_answer.value = n === 2 ? p?.bonus_answer ?? '' : '';
+ form.elements.bonus_answer.value = n === 2 ? (p?.bonus_answer ?? []).join('\n') : '';
  form.elements.puzzle.value = ''; form.elements.solution.value = '';
 }
 async function showEntries({id, rpc, empty, label, action, confirm, remove, argument, refresh}, message = '') {
@@ -103,9 +104,10 @@ select.addEventListener('change',fill);
 form.addEventListener('submit', async e => {
  e.preventDefault(); const n=Number(select.value), old=puzzles.find(p=>p.number===n); let opens, closes; try { opens=fromLocal(form.elements.opens.value); closes=fromLocal(form.elements.closes.value); } catch(err) { say(err.message); return; }
  if (new Date(closes) <= new Date(opens)) { say('Lukketidspunktet skal være efter åbningstidspunktet.'); return; }
- const row={number:n,opens_at:opens,closes_at:closes,points:Number(form.elements.points.value),answers:form.elements.answers.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),puzzle_path:old?.puzzle_path ?? null,solution_path:old?.solution_path ?? null};
- if (n === 2) row.bonus_answer = form.elements.bonus_answer.value.trim() || null;
+ const row={number:n,opens_at:opens,closes_at:closes,points:Number(form.elements.points.value),answers:answerLines(form.elements.answers.value),puzzle_path:old?.puzzle_path ?? null,solution_path:old?.solution_path ?? null};
+ if (n === 2) row.bonus_answer = answerLines(form.elements.bonus_answer.value);
  try {
+  if (row.bonus_answer?.some(answer => answer.length > 100)) throw new Error('Hver bonusvariant må højst være 100 tegn.');
   if (!row.answers.length) throw new Error('Skriv mindst ét facitord.');
   if (row.answers.some(answer => /\s/.test(answer))) throw new Error('Hvert facit skal være ét ord.');
   for (const [field,column] of [['puzzle','puzzle_path'],['solution','solution_path']]) { const file=form.elements[field].files[0]; if (!file) continue; if(file.type !== 'image/png' || file.size > 10485760) throw new Error('Vælg en PNG-fil på højst 10 MB.'); const path=`${n}/${field}-${crypto.randomUUID()}.png`; const {error}=await client.storage.from('puzzle-images').upload(path,file,{contentType:'image/png'}); if(error) throw error; row[column]=path; }

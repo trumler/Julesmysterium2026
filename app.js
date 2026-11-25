@@ -327,10 +327,10 @@ headerLogout.addEventListener('click', signOut);
 function answerForm(number, bonus) {
   const form = document.createElement('form');
   form.className = 'answer-form';
-  form.innerHTML = '<label>Jeres svar<input name="guess" required maxlength="100"></label><button class="button button-green">Send svar</button><p role="status"></p>';
+  form.innerHTML = '<label>Jeres svar<input name="guess" required></label><button class="button button-green">Send svar</button><p role="status"></p>';
   handleForm(form, async () => {
     const {data, error} = await client.rpc('submit_answer', {
-      p_number: number, guess: form.guess.value,
+      p_number: number, guess: form.guess.value.trim(),
     });
     const messages = {
       correct: 'Rigtigt! Holdet har fået point.',
@@ -361,9 +361,9 @@ async function showPuzzleBonus(container) {
 
   const form = document.createElement('form');
   form.className = 'answer-form';
-  form.innerHTML = '<label>Jeres hemmelige bonussvar <span>5 ekstra point</span><input name="guess" required maxlength="100"></label><button class="button button-green">Send bonussvar</button><p role="status"></p>';
+  form.innerHTML = '<label>Jeres hemmelige bonussvar <span>5 ekstra point</span><input name="guess" required></label><button class="button button-green">Send bonussvar</button><p role="status"></p>';
   handleForm(form, async (currentForm, feedback) => {
-    const {data, error} = await client.rpc('submit_puzzle_two_bonus', {guess: currentForm.guess.value});
+    const {data, error} = await client.rpc('submit_puzzle_two_bonus', {guess: currentForm.guess.value.trim()});
     const messages = {
       correct: 'Rigtigt! Holdet har fået 5 ekstra point.',
       incorrect: 'Det var ikke det rigtige bonussvar. Prøv igen.',
