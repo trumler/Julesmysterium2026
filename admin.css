@@ -4,3 +4,5 @@
 .admin-field input,.admin-field select{background:white;color:#183b31}.admin-card button{margin-top:20px}.admin-main [hidden]{display:none}.admin-layout{margin-top:20px}
 
 .admin-field textarea{display:block;width:100%;margin-top:8px;padding:12px;border:1px solid #cfd8cd;background:white;color:#183b31;font:inherit;resize:vertical}.admin-field small{display:block;margin-top:8px;font-weight:400;line-height:1.5}
+
+#bonus-field[hidden] { display: none; }

@@ -6,6 +6,7 @@ const client = createClient(url, key);
 const message = document.querySelector('#message'), loginSection = document.querySelector('#login-section'), dashboard = document.querySelector('#dashboard');
 const form = document.querySelector('#puzzle-form'), select = document.querySelector('#number');
 const logout = document.querySelector('#logout');
+const bonusField = document.querySelector('#bonus-field');
 let puzzles = [];
 const say = text => { message.textContent = text; };
 for (let n = 1; n <= 8; n++) select.add(new Option(`Gåde ${n}`, n));
@@ -19,6 +20,8 @@ function fill() {
  form.elements.closes.value = p ? `${toLocal(p.closes_at)}:${parts(new Date(p.closes_at)).second}` : n < 8 ? `${dates[n]}T08:00` : '2026-12-31T23:59:59';
  form.elements.points.value = p?.points ?? defaultPuzzlePoints(n);
  form.elements.answers.value = (p?.answers ?? []).join('\n');
+ bonusField.hidden = n !== 2;
+ form.elements.bonus_answer.value = n === 2 ? p?.bonus_answer ?? '' : '';
  form.elements.puzzle.value = ''; form.elements.solution.value = '';
 }
 async function showEntries({id, rpc, empty, label, action, confirm, remove, argument, refresh}, message = '') {
@@ -101,6 +104,7 @@ form.addEventListener('submit', async e => {
  e.preventDefault(); const n=Number(select.value), old=puzzles.find(p=>p.number===n); let opens, closes; try { opens=fromLocal(form.elements.opens.value); closes=fromLocal(form.elements.closes.value); } catch(err) { say(err.message); return; }
  if (new Date(closes) <= new Date(opens)) { say('Lukketidspunktet skal være efter åbningstidspunktet.'); return; }
  const row={number:n,opens_at:opens,closes_at:closes,points:Number(form.elements.points.value),answers:form.elements.answers.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean),puzzle_path:old?.puzzle_path ?? null,solution_path:old?.solution_path ?? null};
+ if (n === 2) row.bonus_answer = form.elements.bonus_answer.value.trim() || null;
  try {
   if (!row.answers.length) throw new Error('Skriv mindst ét facitord.');
   if (row.answers.some(answer => /\s/.test(answer))) throw new Error('Hvert facit skal være ét ord.');

@@ -78,7 +78,14 @@ async function load() {
       if (hasOpened && !isOpen && puzzle.solution_path) {
         card.append(imageDownload(puzzle.solution_path, 'loesning-' + number + '.png', 'Download løsningen'));
       }
-      if (activeTeam && isOpen) card.append(answerForm(number));
+      if (activeTeam) {
+        const bonus = number === 2 && hasOpened ? document.createElement('div') : null;
+        if (isOpen) card.append(answerForm(number, bonus));
+        if (bonus) {
+          card.append(bonus);
+          showPuzzleBonus(bonus);
+        }
+      }
     }
     cards.append(card);
   }
@@ -317,7 +324,7 @@ async function signOut() {
 logout.addEventListener('click', signOut);
 headerLogout.addEventListener('click', signOut);
 
-function answerForm(number) {
+function answerForm(number, bonus) {
   const form = document.createElement('form');
   form.className = 'answer-form';
   form.innerHTML = '<label>Jeres svar<input name="guess" required maxlength="100"></label><button class="button button-green">Send svar</button><p role="status"></p>';
@@ -336,10 +343,41 @@ function answerForm(number) {
     if (data === 'correct' || data === 'already_solved') {
       form.guess.disabled = true;
       form.querySelector('button').hidden = true;
+      if (bonus) showPuzzleBonus(bonus);
     }
     if (data === 'correct') loadBoard();
   });
   return form;
+}
+
+async function showPuzzleBonus(container) {
+  const {data, error} = await client.rpc('puzzle_two_bonus_status');
+  if (error || data === 'locked') return;
+  container.replaceChildren();
+  if (data === 'solved') {
+    container.textContent = 'Hemmeligt bonusspørgsmål løst · 5 ekstra point';
+    return;
+  }
+
+  const form = document.createElement('form');
+  form.className = 'answer-form';
+  form.innerHTML = '<label>Jeres hemmelige bonussvar <span>5 ekstra point</span><input name="guess" required maxlength="100"></label><button class="button button-green">Send bonussvar</button><p role="status"></p>';
+  handleForm(form, async (currentForm, feedback) => {
+    const {data, error} = await client.rpc('submit_puzzle_two_bonus', {guess: currentForm.guess.value});
+    const messages = {
+      correct: 'Rigtigt! Holdet har fået 5 ekstra point.',
+      incorrect: 'Det var ikke det rigtige bonussvar. Prøv igen.',
+      already_solved: 'Jeres hold har allerede fået de 5 ekstra point.',
+      locked: 'Bonussvaret er ikke tilgængeligt lige nu.',
+    };
+    feedback.textContent = error ? 'Bonussvaret kunne ikke sendes. Prøv igen.' : messages[data];
+    if (data === 'correct' || data === 'already_solved') {
+      currentForm.guess.disabled = true;
+      currentForm.querySelector('button').hidden = true;
+      loadBoard();
+    }
+  });
+  container.append(form);
 }
 
 client.auth.onAuthStateChange((event, session) => {
