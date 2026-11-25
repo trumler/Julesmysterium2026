@@ -6,15 +6,18 @@
   <meta name="theme-color" content="#153d32">
   <meta name="description" content="Holmeagerskolens Julemysterie 2026 – saml dit hold og løs otte julegåder.">
   <title>Holmeagerskolens Julemysterie 2026</title>
-  <link rel="stylesheet" href="style.css">
-  <script type="module" src="app.js"></script>
+  <link rel="stylesheet" href="style.css?v=2">
+  <script type="module" src="app.js?v=2"></script>
 </head>
 <body>
   <div class="announcement">✦ &nbsp; ET JULEMYSTERIE FOR HELE HOLMEAGERSKOLEN &nbsp; ✦</div>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="Holmeagerskolens Julemysterie, forsiden"><span class="brand-mark">✳</span><span>HOLMEAGERSKOLENS<small>JULEMYSTERIE <b>2026</b></small></span></a>
     <nav aria-label="Hovedmenu"><a href="#saadan">Sådan spiller I</a><a href="#gaader">Gåderne</a><a href="#pointtavle">Pointtavle</a></nav>
-    <a class="header-button" href="#hold">Opret dit hold <span>↗</span></a>
+    <div class="header-actions">
+      <a class="header-button" href="#hold">Opret dit hold</a>
+      <a class="header-button header-login" href="#signin">Log ind</a>
+    </div>
   </header>
   <main id="top">
     <section class="hero">
@@ -36,12 +39,14 @@
           <small>Brug 3–30 bogstaver fra A til Z, tal, bindestreger eller underscores.</small>
           <label>Adgangskode<input name="password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required></label>
           <button class="button button-green">Opret konto ↗</button>
+          <p class="form-feedback" role="status"></p>
         </form>
         <form id="signin" class="team-form">
           <h3>Log ind</h3>
-          <label>Brugernavn<input name="username" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="30" pattern="[A-Za-z0-9_\-]{3,30}" required></label>
+          <label>Brugernavn<input name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="30" required></label>
           <label>Adgangskode<input name="password" type="password" autocomplete="current-password" required></label>
           <button class="button button-green">Log ind ↗</button>
+          <p class="form-feedback" role="status"></p>
         </form>
       </div>
       <form id="create-team" class="team-form" hidden>
@@ -54,6 +59,7 @@
         <small>Første plads er til holdkaptajnen. I kan bruge fornavne, kælenavne eller bare skrive “Familien” eller “5.D”.</small>
         <div id="roster-fields"></div>
         <button id="save-team" class="button button-green">Opret hold ↗</button>
+        <p class="form-feedback" role="status"></p>
       </form>
       <button id="team-logout" class="button button-green" type="button" hidden>Log ud</button></section>
   </main>

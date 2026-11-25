@@ -44,6 +44,7 @@ async function openImage(event, path) {
 }
 
 const status = document.querySelector('#team-status');
+const headerLogin = document.querySelector('.header-login');
 const authPanel = document.querySelector('#team-auth');
 const createForm = document.querySelector('#create-team');
 const logout = document.querySelector('#team-logout');
@@ -105,6 +106,8 @@ async function showSession(session) {
     saveTeam.textContent = activeTeam ? 'Gem ændringer' : 'Opret hold ↗';
   }
   authPanel.hidden = Boolean(session);
+  headerLogin.href = session ? '#hold' : '#signin';
+  headerLogin.textContent = session ? 'Mit hold' : 'Log ind';
   createForm.hidden = !session || Boolean(result.error);
   logout.hidden = !session;
   status.textContent = result.error ? 'Holdet kunne ikke hentes. Prøv at genindlæse siden.'
@@ -117,62 +120,77 @@ function handleForm(form, handler) {
   form.addEventListener('submit', async event => {
     event.preventDefault();
     const button = form.querySelector('button:not([type=button])');
+    if (button.disabled) return;
+    const feedback = form.querySelector('[role=status]') ?? status;
+    feedback.textContent = '';
     button.disabled = true;
+    form.setAttribute('aria-busy', 'true');
     try {
-      await handler(form);
+      await handler(form, feedback);
     } catch {
-      const feedback = form.querySelector('[role=status]') ?? status;
       feedback.textContent = 'Forbindelsen blev afbrudt. Prøv igen.';
     } finally {
       button.disabled = false;
+      form.removeAttribute('aria-busy');
     }
   });
 }
 
-handleForm(document.querySelector('#signup'), async form => {
+handleForm(document.querySelector('#signup'), async (form, feedback) => {
   const username = form.username.value.trim().toLowerCase();
   const password = form.password.value;
   if (new TextEncoder().encode(password).length > 72) {
-    status.textContent = 'Vælg en kortere adgangskode.';
+    feedback.textContent = 'Vælg en kortere adgangskode.';
     return;
   }
   const {error} = await client.functions.invoke('register-player', {body: {username, password}});
   if (error) {
     const code = error.context?.status;
-    status.textContent = code === 409 ? 'Brugernavnet er optaget. Vælg et andet.'
+    feedback.textContent = code === 409 ? 'Brugernavnet er optaget. Vælg et andet.'
       : code === 429 ? 'Der er oprettet mange konti fra denne forbindelse. Prøv igen senere.'
       : 'Kontoen kunne ikke oprettes. Prøv igen.';
     return;
   }
   const login = await client.auth.signInWithPassword({email: accountEmail(username), password});
   form.reset();
-  if (login.error) status.textContent = 'Kontoen er oprettet. Brug Log ind for at fortsætte.';
+  if (login.error) feedback.textContent = 'Kontoen er oprettet. Brug Log ind for at fortsætte.';
 });
 
-handleForm(document.querySelector('#signin'), async form => {
+handleForm(document.querySelector('#signin'), async (form, feedback) => {
+  const username = form.username.value.trim().toLowerCase();
+  if (!/^[a-z0-9_-]{3,30}$/.test(username)) {
+    feedback.textContent = 'Forkert brugernavn eller adgangskode.';
+    return;
+  }
   const {error} = await client.auth.signInWithPassword({
-    email: accountEmail(form.username.value), password: form.password.value,
+    email: accountEmail(username), password: form.password.value,
   });
-  if (error) status.textContent = 'Login mislykkedes. Tjek brugernavn og adgangskode.';
-  else form.reset();
+  if (!error) form.reset();
+  else if (error.code === 'invalid_credentials') {
+    feedback.textContent = 'Forkert brugernavn eller adgangskode.';
+  } else if (error.status === 429) {
+    feedback.textContent = 'For mange loginforsøg. Prøv igen om lidt.';
+  } else {
+    feedback.textContent = 'Du kunne ikke logge ind lige nu. Prøv igen.';
+  }
 });
 
-handleForm(createForm, async form => {
+handleForm(createForm, async (form, feedback) => {
   const teamName = form.team_name.value.trim();
   if (teamName.length < 2) {
-    status.textContent = 'Holdnavnet skal være mindst to tegn.';
+    feedback.textContent = 'Holdnavnet skal være mindst to tegn.';
     return;
   }
   const members = new FormData(form).getAll('member').map(name => name.trim());
   if (!members[0]) {
-    status.textContent = 'Skriv et navn eller kaldenavn til holdkaptajnen.';
+    feedback.textContent = 'Skriv et navn eller kaldenavn til holdkaptajnen.';
     return;
   }
   const {error} = await client.rpc('save_team_roster', {
     team_name: teamName, roster: members.filter(Boolean),
   });
   if (error) {
-    status.textContent = error.code === '23505' ? 'Holdnavnet er allerede taget. Vælg et andet.'
+    feedback.textContent = error.code === '23505' ? 'Holdnavnet er allerede taget. Vælg et andet.'
       : 'Holdet kunne ikke oprettes. Prøv igen.';
     return;
   }
